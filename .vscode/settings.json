@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "xstring": "cpp",
+        "string": "cpp",
+        "system_error": "cpp",
+        "xlocale": "cpp",
+        "xmemory0": "cpp"
+    }
+}
