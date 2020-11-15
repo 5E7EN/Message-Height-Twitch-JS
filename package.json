@@ -1,13 +1,9 @@
 {
-  "name": "message-height-twitch-js",
+  "name": "message-height-twitch",
   "version": "0.0.1",
-  "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "5E7EN",
-  "license": "ISC",
+  "description": "Node C++ bindings for TETYYS' message height twitch C# library.",
   "dependencies": {
     "node-addon-api": "^3.0.2"
   }
