@@ -7,9 +7,9 @@ Napi::Boolean InitializeLibrary(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
 
-    auto clr1 = std::string("/usr/bin/node").c_str();
-    auto clr2 = std::string("/usr/share/dotnet/shared/Microsoft.NETCore.App/3.1.10").c_str();
-    auto clr3 = std::string("/home/5E7EN/GitHub/Message-Height-Twitch-JS/origin/bin/Release/netstandard2.1/publish/MessageHeightTwitch.dll").c_str();
+    auto clr1 = "/usr/bin/node";
+    auto clr2 = "/usr/share/dotnet/shared/Microsoft.NETCore.App/3.1.10";
+    auto clr3 = "/home/5E7EN/GitHub/Message-Height-Twitch-JS/origin/bin/Release/netstandard2.1/publish/MessageHeightTwitch.dll";
 
     auto res = LoadCLRRuntime(clr1, clr2, clr3);
 
@@ -18,7 +18,7 @@ Napi::Boolean InitializeLibrary(const Napi::CallbackInfo &info)
         return Napi::Boolean::New(env, false);
     }
 
-    auto charMapPath = std::string("../origin/charmap.bin.gz").c_str();
+    auto charMapPath = "./origin/charmap.bin.gz";
 
     res = InitCharMap(charMapPath);
 
@@ -52,7 +52,7 @@ Napi::Boolean InitializeChannel(const Napi::CallbackInfo &info)
     auto channelID = info[1].As<Napi::String>();
     auto timeout = info[2].As<Napi::Number>().Int32Value();
 
-    auto res = InitChannel(std::string(channelName).c_str(), std::string(channelID).c_str(), timeout);
+    auto res = InitChannel((channelName).Utf8Value().c_str(), (channelID).Utf8Value().c_str(), timeout);
 
     if (res != 1)
     {
@@ -68,13 +68,13 @@ Napi::Number CalculateHeight(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
 
     // Ensure correct amount of args were provided
-    if (info.Length() < 7)
+    if (info.Length() < 6)
     {
         Napi::TypeError::New(env, "Wrong number of arguments provided. Expected: channelName <string>, messageInput <string>, username <string>, displayName <string>, badgeCount <number>, twitchEmotes <array>, twitchEmotesLength <number>").ThrowAsJavaScriptException();
     }
 
     // Ensure provided arguments are valid
-    if (!info[0].IsString() || !info[1].IsString() || !info[2].IsString() || !info[3].IsString() || !info[4].IsNumber() || !info[5].IsObject() || !info[6].IsNumber())
+    if (!info[0].IsString() || !info[1].IsString() || !info[2].IsString() || !info[3].IsString() || !info[4].IsNumber() || !info[5].IsArray())
     {
         Napi::TypeError::New(env, "Some argument has invalid type. Expected: channelName <string>, messageInput <string>, username <string>, displayName <string>, badgeCount <number>, twitchEmotes <array>, twitchEmotesLength <number>").ThrowAsJavaScriptException();
     }
@@ -85,14 +85,41 @@ Napi::Number CalculateHeight(const Napi::CallbackInfo &info)
     auto displayName = info[3].As<Napi::String>();
     auto badgeCount = info[4].As<Napi::Number>().Int32Value();
     // TODO: FIX THIS
-    auto TwitchEmotes = info[5];
-    auto TwitchEmotesLen = info[6].As<Napi::Number>().Int32Value();
+    auto TwitchEmotes = info[5].As<Napi::Array>();
 
-    //float res = CalculateMessageHeightDirect(std::string(channelName).c_str(), std::string(messageInput).c_str(), std::string(username).c_str(), std::string(displayName).c_str(), badgeCount, TwitchEmotes, TwitchEmotesLen);
+    // Find twitch emotes length
+    auto TwitchEmotesLen = TwitchEmotes.Length();
 
-    //auto converted = Napi::Number::New(env, res);
+    TwitchEmote ourArray[TwitchEmotesLen];
 
-    return Napi::Number::New(env, 1);
+    for (auto i = 0; i < TwitchEmotesLen; i++)
+    {
+        Napi::Value val = TwitchEmotes[i];
+
+        if (!val.IsObject())
+        {
+            Napi::TypeError::New(env, "Emotes list has item of invalid type. Expected object.").ThrowAsJavaScriptException();
+        }
+
+        Napi::Value nameCheck = val.As<Napi::Object>()["Name"];
+        Napi::Value urlCheck = val.As<Napi::Object>()["Url"];
+
+        if (nameCheck != nullptr && nameCheck.IsString())
+        {
+            ourArray[i].Name = nameCheck.As<Napi::String>().Utf8Value().c_str();
+        }
+
+        if (urlCheck != nullptr && urlCheck.IsString())
+        {
+            ourArray[i].Url = urlCheck.As<Napi::String>().Utf8Value().c_str();
+        }
+    }
+
+    float res = CalculateMessageHeightDirect((channelName).Utf8Value().c_str(), (messageInput).Utf8Value().c_str(), (username).Utf8Value().c_str(), (displayName).Utf8Value().c_str(), badgeCount, ourArray, TwitchEmotesLen);
+
+    auto converted = Napi::Number::New(env, res);
+
+    return Napi::Number::New(env, converted);
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
@@ -105,9 +132,9 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
         Napi::String::New(env, "InitializeChannel"),
         Napi::Function::New(env, InitializeChannel));
 
-    // exports.Set(
-    //     Napi::String::New(env, "CalculateHeight"),
-    //     Napi::Function::New(env, CalculateHeight));
+    exports.Set(
+        Napi::String::New(env, "CalculateHeight"),
+        Napi::Function::New(env, CalculateHeight));
 
     return exports;
 }
