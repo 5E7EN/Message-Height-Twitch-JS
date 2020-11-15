@@ -3,7 +3,6 @@
         {
             "target_name": "message-height-twitch",
             "cflags!": ["-fno-exceptions"],
-            "cflags": ["-fPIC"],
             "cflags_cc!": ["-fno-exceptions"],
             "sources": [
                 "./src/index.cpp"
