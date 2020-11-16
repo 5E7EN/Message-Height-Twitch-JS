@@ -84,38 +84,35 @@ Napi::Number CalculateHeight(const Napi::CallbackInfo &info)
     auto username = info[2].As<Napi::String>();
     auto displayName = info[3].As<Napi::String>();
     auto badgeCount = info[4].As<Napi::Number>().Int32Value();
-    // TODO: FIX THIS
-    auto TwitchEmotes = info[5].As<Napi::Array>();
+    auto twitchEmotes = info[5].As<Napi::Array>();
+    auto twitchEmotesLength = twitchEmotes.Length();
 
-    // Find twitch emotes length
-    auto TwitchEmotesLen = TwitchEmotes.Length();
+    TwitchEmote verifiedEmotes[twitchEmotesLength];
 
-    TwitchEmote ourArray[TwitchEmotesLen];
-
-    for (auto i = 0; i < TwitchEmotesLen; i++)
+    for (auto i = 0; i < twitchEmotesLength; i++)
     {
-        Napi::Value val = TwitchEmotes[i];
+        Napi::Value emote = twitchEmotes[i];
 
-        if (!val.IsObject())
+        if (!emote.IsObject())
         {
-            Napi::TypeError::New(env, "Emotes list has item of invalid type. Expected object.").ThrowAsJavaScriptException();
+            Napi::TypeError::New(env, "Emotes list has item of invalid type. Expected object with 'Name' and 'Url' properties.").ThrowAsJavaScriptException();
         }
 
-        Napi::Value nameCheck = val.As<Napi::Object>()["Name"];
-        Napi::Value urlCheck = val.As<Napi::Object>()["Url"];
+        Napi::Value targetName = emote.As<Napi::Object>()["Name"];
+        Napi::Value targetUrl = emote.As<Napi::Object>()["Url"];
 
-        if (nameCheck != nullptr && nameCheck.IsString())
+        if (targetName != nullptr && targetName.IsString())
         {
-            ourArray[i].Name = nameCheck.As<Napi::String>().Utf8Value().c_str();
+            verifiedEmotes[i].Name = targetName.As<Napi::String>().Utf8Value().c_str();
         }
 
-        if (urlCheck != nullptr && urlCheck.IsString())
+        if (targetUrl != nullptr && targetUrl.IsString())
         {
-            ourArray[i].Url = urlCheck.As<Napi::String>().Utf8Value().c_str();
+            verifiedEmotes[i].Url = targetUrl.As<Napi::String>().Utf8Value().c_str();
         }
     }
 
-    float res = CalculateMessageHeightDirect((channelName).Utf8Value().c_str(), (messageInput).Utf8Value().c_str(), (username).Utf8Value().c_str(), (displayName).Utf8Value().c_str(), badgeCount, ourArray, TwitchEmotesLen);
+    float res = CalculateMessageHeightDirect((channelName).Utf8Value().c_str(), (messageInput).Utf8Value().c_str(), (username).Utf8Value().c_str(), (displayName).Utf8Value().c_str(), badgeCount, verifiedEmotes, twitchEmotesLength);
 
     auto converted = Napi::Number::New(env, res);
 

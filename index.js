@@ -5,5 +5,7 @@ console.log('Channel load success:', lib.InitializeChannel('simon36', '230654310
 
 console.log(
   'Message result:',
-  lib.CalculateHeight('simon36', 'vadiChad', 'tetyys', 'TETYYS', 1, [{ Name: 'vadiChad', Url: 'https://static-cdn.jtvnw.net/emoticons/v1/302394764/1.0' }])
+  lib.CalculateHeight('simon36', 'cool message! this is a cool message xD vadiChad', 'tetyys', 'TETYYS', 1, [
+    { Name: 'vadiChad', Url: 'https://static-cdn.jtvnw.net/emoticons/v1/302394764/1.0' },
+  ])
 );
