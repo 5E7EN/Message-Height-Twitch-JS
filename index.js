@@ -1,11 +1,9 @@
 const lib = require('./build/Release/message-height-twitch.node');
 
-console.log('Initial load success:', lib.InitializeLibrary());
-console.log('Channel load success:', lib.InitializeChannel('simon36', '230654310', 5000));
+console.log('Initial load success:', lib.initializeLibrary());
+console.log('Channel load success:', lib.initializeChannel('simon36', '230654310', 5000));
 
 console.log(
   'Message result:',
-  lib.CalculateHeight('simon36', 'cool message! this is a cool message xD vadiChad', 'tetyys', 'TETYYS', 1, [
-    { Name: 'vadiChad', Url: 'https://static-cdn.jtvnw.net/emoticons/v1/302394764/1.0' },
-  ])
+  lib.calculateHeight('simon36', 'it works now BOP 💀', 'tetyys', 'TETYYS', 1, [{ name: 'BOP', url: 'https://static-cdn.jtvnw.net/emoticons/v1/301428702/1.0' }])
 );

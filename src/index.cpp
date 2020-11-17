@@ -88,6 +88,8 @@ Napi::Number CalculateHeight(const Napi::CallbackInfo &info)
     auto twitchEmotesLength = twitchEmotes.Length();
 
     TwitchEmote verifiedEmotes[twitchEmotesLength];
+    std::string nameStringInstances[twitchEmotesLength];
+    std::string urlStringInstances[twitchEmotesLength];
 
     for (auto i = 0; i < twitchEmotesLength; i++)
     {
@@ -98,17 +100,25 @@ Napi::Number CalculateHeight(const Napi::CallbackInfo &info)
             Napi::TypeError::New(env, "Emotes list has item of invalid type. Expected object with 'Name' and 'Url' properties.").ThrowAsJavaScriptException();
         }
 
-        Napi::Value targetName = emote.As<Napi::Object>()["Name"];
-        Napi::Value targetUrl = emote.As<Napi::Object>()["Url"];
+        Napi::Value targetName = emote.As<Napi::Object>()["name"];
+        Napi::Value targetUrl = emote.As<Napi::Object>()["url"];
 
         if (targetName != nullptr && targetName.IsString())
         {
-            verifiedEmotes[i].Name = targetName.As<Napi::String>().Utf8Value().c_str();
+            auto utf8 = targetName.As<Napi::String>().Utf8Value();
+            nameStringInstances[i] = utf8;
+            verifiedEmotes[i].Name = nameStringInstances[i].c_str();
+        }
+        else
+        {
+            Napi::TypeError::New(env, "Emotes list has item of invalid type. Expected object with 'name' <string> and 'url' <string> properties.").ThrowAsJavaScriptException();
         }
 
         if (targetUrl != nullptr && targetUrl.IsString())
         {
-            verifiedEmotes[i].Url = targetUrl.As<Napi::String>().Utf8Value().c_str();
+            auto utf8 = targetUrl.As<Napi::String>().Utf8Value();
+            urlStringInstances[i] = utf8;
+            verifiedEmotes[i].Url = urlStringInstances[i].c_str();
         }
     }
 
@@ -122,15 +132,15 @@ Napi::Number CalculateHeight(const Napi::CallbackInfo &info)
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     exports.Set(
-        Napi::String::New(env, "InitializeLibrary"),
+        Napi::String::New(env, "initializeLibrary"),
         Napi::Function::New(env, InitializeLibrary));
 
     exports.Set(
-        Napi::String::New(env, "InitializeChannel"),
+        Napi::String::New(env, "initializeChannel"),
         Napi::Function::New(env, InitializeChannel));
 
     exports.Set(
-        Napi::String::New(env, "CalculateHeight"),
+        Napi::String::New(env, "calculateHeight"),
         Napi::Function::New(env, CalculateHeight));
 
     return exports;
